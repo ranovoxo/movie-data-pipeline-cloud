@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.env
+.env
+
+# Jupyter
+.ipynb_checkpoints
+
+# VSCode
+.vscode/
+
+# Logs
+logs/
+*.log
+
+# Airflow
+airflow.db
+airflow.cfg
+unittests.cfg
+*.airflow-local.db
+dags/__pycache__/
+
+# Docker
+*.pid
+*.pid.lock
+docker-compose.override.yml
+docker-compose.*.yml
+.env.*
+
+# System
+.DS_Store
+Thumbs.db
+
+# PostgreSQL
+*.sql~  # temp files
+pgdata/
+
+# Pip / Python deps
+pip-wheel-metadata/
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# pySpark / Java
+.metastore_db/
+derby.log
+
+# Misc
+*.bak
+*.swp
+*.tmp

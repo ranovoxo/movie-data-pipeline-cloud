@@ -37,10 +37,9 @@ def extract_movies(**context):
     log_extract_end()
     context['ti'].xcom_push(key='raw_data', value=data)
 
-def transform_gold_layer(**context):
+def transform_gold_layer():
     log_transform_start()
-    silver_data = context['ti'].xcom_pull(task_ids='transform_movies_silver', key='silver_data')
-    gold_data = transform_to_gold(silver_data)
+    transform_to_gold()
     log_transform_end()
     #context['ti'].xcom_push(key='gold_data', value=gold_data)
 

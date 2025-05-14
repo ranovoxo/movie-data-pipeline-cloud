@@ -1,51 +1,36 @@
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, explode
-import logging
+import pandas as pd
+from logger import *
 import os
-import sys
+from sqlalchemy import create_engine
+from airflow.models import Variable
 
-POSTGRES_DB = os.getenv("POSTGRES_DB")
-POSTGRES_USER = os.getenv("POSTGRES_USER")
-POSTGRES_PW = os.getenv("POSTGRES_PW")
-DB_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PW}@postgres:5432/movie-ratings-db"
+POSTGRES_DB = Variable.get("POSTGRES_DB")
+POSTGRES_USER = Variable.get("POSTGRES_USER")
+POSTGRES_PW = Variable.get("POSTGRES_PW")
+
+# SQLAlchemy connection string
+DB_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PW}@postgres:5432/{POSTGRES_DB}"
+
 SOURCE_TABLE = "raw_movies"
 TARGET_TABLE = "movies_silver"
 
 
-def setup_logger(name):
-    # Use Airflow's logger (which will be visible in the UI)
-    logger = logging.getLogger('airflow.task')
-    logger.setLevel(logging.INFO)
-    return logger
-
-extract_logger = setup_logger('extract_logger')
-
 def transform_to_silver():
-    """Transform raw data to silver-level cleaned data using PySpark and write to Postgres"""
-    logger = setup_logger()
-    logger.info("transform", "Starting transformation to silver...")
+    """Transform raw data to silver-level cleaned data using Pandas and write to Postgres"""
 
-    # Initialize SparkSession
-    spark = SparkSession.builder.appName("MovieETL").getOrCreate()
-    # Get the Airflow logger
-    log = logging.getLogger('airflow.task')
+    log_info("Transform","Starting transformation to silver...")
+
     try:
-        # Read raw data
-        df = spark.read \
-            .format("jdbc") \
-            .option("url", DB_URL) \
-            .option("dbtable", SOURCE_TABLE) \
-            .option("user", POSTGRES_USER) \
-            .option("password", POSTGRES_PW) \
-            .option("driver", "org.postgresql.Driver") \
-            .load()
-        
-        log.info(f"Rows read from source table `{SOURCE_TABLE}`: {df.count()}")
+        # create database engine
+        engine = create_engine(DB_URL)
 
-        log.info("Raw data read from PostgreSQL.")
-        log.info(f"Original row count: {df.count()}")
-        # Clean and transform
-        df_silver = df.select(
+        # read raw data from PostgreSQL
+        df = pd.read_sql(f"SELECT * FROM {SOURCE_TABLE}", engine)
+
+        log_info("transform", f"{len(df)} Rows read from source table `{SOURCE_TABLE}`")
+
+        # Select and clean relevant columns
+        df_silver = df[[
             'id',
             'title',
             'release_date',
@@ -55,29 +40,25 @@ def transform_to_silver():
             'popularity',
             'overview',
             'original_language'
-        ).dropna()
-        log.info(f"After dropna: {df_silver.count()}")
+        ]].dropna()
+        log_info("transform", f"After dropna: {len(df_silver)}")
 
-        df_silver = df_silver.withColumn('release_date', col('release_date').cast('date'))
-        df_silver = df_silver.dropDuplicates()
-        df_silver.printSchema()
+        # convert release_date to datetime
+        df_silver['release_date'] = pd.to_datetime(df_silver['release_date'], errors='coerce')
 
-        log.info("Data transformation completed. Writing to PostgreSQL...")
+        # drop duplicates
+        df_silver = df_silver.drop_duplicates()
 
-        # Write to silver table
-        # TODO: pyspark not writing to table, need to investigate.
-        df_silver.write \
-            .format("jdbc") \
-            .option("url", DB_URL) \
-            .option("dbtable", TARGET_TABLE) \
-            .option("user", POSTGRES_USER) \
-            .option("password", POSTGRES_PW) \
-            .option("driver", "org.postgresql.Driver") \
-            .mode("overwrite") \
-            .save()
+        log_info("transform", f"Count after dropping duplicates: {len(df_silver)}")
 
-        log.info(f"Data written to table `{TARGET_TABLE}` successfully.")
+        log_info("transform", "Data transformation completed. Writing to PostgreSQL...")
+
+        # write to silver table (overwrite)
+        df_silver.to_sql(TARGET_TABLE, engine, if_exists='replace', index=False)
+
+        log_info("transform", f"Data written to table `{TARGET_TABLE}` successfully.")
+        log_load_end()
 
     except Exception as e:
-        log.error(f"Error during transformation or loading: {str(e)}")
+        log_error("transform", f"Error during transformation or loading: {str(e)}")
         raise

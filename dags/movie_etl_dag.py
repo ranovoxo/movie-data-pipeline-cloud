@@ -59,17 +59,13 @@ extract_task = PythonOperator(
 )
 
 
-transform_silver_task = DockerOperator(
+transform_silver_task = PythonOperator(
     task_id='transform_silver_task',
-    image='bitnami/spark:3.4',
-    command='spark-submit --master spark://spark:7077 /opt/workspace/transform_silver_layer.py',
-    docker_url='unix://var/run/docker.sock',  # Ensure this points to Docker socket
-    # TODO: Remove actual path and replace with variable
-    mounts=[Mount(source='/Users/randalcarr/Projects/movies-etl-project/src', target='/opt/workspace', type='bind')],
-    network_mode='movies-etl-project_airflow_net',
-    mount_tmp_dir=False,
+    python_callable=transform_to_silver,
+    provide_context=True,  # Optional, if you're not using context vars, you can remove this
     dag=dag,
 )
+
 
 transform_gold_task = PythonOperator(
     task_id='transform_movies_gold',

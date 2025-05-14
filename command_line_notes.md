@@ -2,6 +2,8 @@
 git clone https://github.com/yourusername/movie-data-pipeline.git
 cd movie-data-pipeline
 
+# Airflow localhost:
+
 # Create the .env file with PostgreSQL environment variables
 echo "POSTGRES_USER=airflow
 POSTGRES_PASSWORD=airflow

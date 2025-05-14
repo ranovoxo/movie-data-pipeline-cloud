@@ -1,16 +1,6 @@
 #version: "3.8"
 
 services:
-  spark:
-    image: bitnami/spark:3.4
-    container_name: spark
-    environment:
-      - SPARK_MODE=master
-    volumes:
-      - ./src:/opt/workspace  # So Spark can access your ETL scripts
-    networks:
-      - airflow_net
-
   postgres:
     image: postgres:14
     container_name: postgres

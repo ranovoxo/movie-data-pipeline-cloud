@@ -38,13 +38,3 @@ CREATE TABLE IF NOT EXISTS silver_movies (
     extracted_at TIMESTAMP,
     FOREIGN KEY (primary_genre_id) REFERENCES genres (genre_id)
 );
-
--- GOLD TABLE: Aggregated insights per genre/year
-CREATE TABLE IF NOT EXISTS gold_movies (
-    genre_name TEXT,
-    release_year INTEGER,
-    avg_rating FLOAT,
-    total_movies INTEGER,
-    total_votes INTEGER,
-    PRIMARY KEY (genre_name, release_year)
-);

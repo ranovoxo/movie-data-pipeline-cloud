@@ -2,7 +2,7 @@ import pandas as pd
 import logging
 import os
 from sqlalchemy import create_engine
-from logger import setup_logger
+from logger import *
 from airflow.models import Variable
 
 POSTGRES_DB = Variable.get("POSTGRES_DB")
@@ -14,14 +14,14 @@ DB_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PW}@postgres:5432/{POSTGRES_DB
 
 def transform_to_gold():
     """Aggregate silver data and write gold-level insights to PostgreSQL"""
-    #log_info("Starting transformation to gold...")
+    log_info("gold_layer", "Starting transformation to gold...")
 
     try:
         engine = create_engine(DB_URL)
 
         # Load silver data
         df = pd.read_sql("SELECT * FROM movies_silver", engine)
-        #logger.info(f"Loaded {len(df)} rows from silver table")
+        log_info("gold_layer", f"Loaded {len(df)} rows from silver table")
 
         # Sample gold transformations
         top_movies = df.sort_values(by="vote_average", ascending=False).head(10)
@@ -37,8 +37,8 @@ def transform_to_gold():
         avg_rating_by_lang.to_sql("gold_avg_rating_by_language", engine, if_exists="replace", index=False)
         yearly_counts.to_sql("gold_yearly_counts", engine, if_exists="replace", index=False)
 
-        #logger.info("Gold tables written successfully.")
+        log_info("gold_layer", "Gold tables written successfully.")
 
     except Exception as e:
-        #log_.error(f"Gold transformation failed: {str(e)}")
+        log_error(f"Gold transformation failed: {str(e)}")
         raise

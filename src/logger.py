@@ -59,7 +59,7 @@ def log_info(stage: str, message: str):
         extract_logger.info(message)
     elif stage == 'transform':
         transform_logger.info(message)
-    elif stage == 'load':
+    elif stage == 'gold_layer':
         load_logger.info(message)
     else:
         logging.info(f"[Unknown Stage] {message}")

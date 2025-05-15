@@ -1,4 +1,4 @@
-#version: "3.8"
+# version: "3.8"
 
 services:
   postgres:
@@ -17,6 +17,7 @@ services:
       - airflow_net
     env_file:
       - .env
+
   pgadmin:
     image: dpage/pgadmin4
     environment:
@@ -28,9 +29,10 @@ services:
       - postgres
     networks:
       - airflow_net
+
   airflow-webserver:
     env_file:
-        - .env
+      - .env
     image: apache/airflow:2.7.1-python3.10
     build: 
       context: .
@@ -54,12 +56,12 @@ services:
       - ./logs:/opt/airflow/logs
       - ./sql:/opt/airflow/sql
       - /var/run/docker.sock:/var/run/docker.sock
+      - ${TABLEAU_EXPORT_PATH}:/opt/airflow/src/tableau/hyper_exports
     ports:
       - "8080:8080"
     command: webserver
     networks:
       - airflow_net
-    
 
   airflow-scheduler:
     build: .
@@ -77,6 +79,7 @@ services:
       - ./logs:/opt/airflow/logs
       - ./sql:/opt/airflow/sql
       - /var/run/docker.sock:/var/run/docker.sock
+      - ${TABLEAU_EXPORT_PATH}:/opt/airflow/src/tableau/hyper_exports
     command: scheduler
     networks:
       - airflow_net

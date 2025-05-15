@@ -11,6 +11,20 @@ POSTGRES_PW = Variable.get("POSTGRES_PW")
 
 DB_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PW}@postgres:5432/{POSTGRES_DB}"
 
+# Create output directory if it doesn't exist
+#CSV_DIR = os.path.join(os.path.dirname(__file__), "..", "tableau", "hyper_exports")
+#os.makedirs(CSV_DIR, exist_ok=True)
+
+CSV_DIR = "/opt/airflow/src/tableau/hyper_exports"
+
+
+def export_csv_for_tableau(tables_dict, csv_dir):
+    
+    for name, df in tables_dict.items():
+        csv_path = os.path.join(csv_dir, f"{name}.csv")
+        df.to_csv(csv_path, index=False)
+        print(f"✅ Exported `{name}` to CSV: {csv_path}")
+
 
 def transform_to_gold():
     """Aggregate silver data and write gold-level insights to PostgreSQL"""
@@ -38,6 +52,15 @@ def transform_to_gold():
         yearly_counts.to_sql("gold_yearly_counts", engine, if_exists="replace", index=False)
 
         log_info("gold_layer", "Gold tables written successfully.")
+
+        export_csv_for_tableau(
+                    {
+                "gold_top_movies": top_movies,
+                "avg_rating_by_lang": avg_rating_by_lang,
+                "yearly_counts": yearly_counts
+                },
+                CSV_DIR
+            )
 
     except Exception as e:
         log_error(f"Gold transformation failed: {str(e)}")

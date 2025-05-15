@@ -3,16 +3,35 @@ from logger import *
 import os
 from sqlalchemy import create_engine
 from airflow.models import Variable
+import requests
 
 POSTGRES_DB = Variable.get("POSTGRES_DB")
 POSTGRES_USER = Variable.get("POSTGRES_USER")
 POSTGRES_PW = Variable.get("POSTGRES_PW")
+TMDB_API_KEY = Variable.get("MY_API_KEY")
 
 # SQLAlchemy connection string
 DB_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PW}@postgres:5432/{POSTGRES_DB}"
 
 SOURCE_TABLE = "raw_movies"
 TARGET_TABLE = "movies_silver"
+
+# getting the genere's and what numbers they map to to include into dataset
+def get_genere_id_mapping():
+
+    url = "https://api.themoviedb.org/3/genre/movie/list"
+    params = {
+        "api_key": TMDB_API_KEY,
+        "language": "en-US"
+    }
+    
+    response = requests.get(url, params=params)
+    genres = response.json()["genres"]
+
+    # convert to dictionary
+    genre_map = {genre["id"]: genre["name"] for genre in genres}
+
+    return genre_map
 
 
 def transform_to_silver():
@@ -53,6 +72,8 @@ def transform_to_silver():
 
         log_info("transform", "Data transformation completed. Writing to PostgreSQL...")
 
+        # TODO: get genere mappings and join with silver table:
+        
         # write to silver table (overwrite)
         df_silver.to_sql(TARGET_TABLE, engine, if_exists='replace', index=False)
 

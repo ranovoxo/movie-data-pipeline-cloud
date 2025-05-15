@@ -5,15 +5,15 @@ from sqlalchemy import create_engine
 from airflow.models import Variable
 import os
 
+TMDB_API_KEY = Variable.get("MY_API_KEY")
+POSTGRES_USER=Variable.get("POSTGRES_USER")
+POSTGRES_PW=Variable.get("POSTGRES_PW")
+
+DB_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PW}@postgres:5432/movie-ratings-db"
 
 
 def extract_data():
     # Database connection settings (replace with actual values or load from .env)
-    TMDB_API_KEY = Variable.get("MY_API_KEY")
-    POSTGRES_USER=Variable.get("POSTGRES_USER")
-    POSTGRES_PW=Variable.get("POSTGRES_PW")
-
-    DB_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PW}@postgres:5432/movie-ratings-db"
 
     log_extract_start()
     url = "https://api.themoviedb.org/3/discover/movie"

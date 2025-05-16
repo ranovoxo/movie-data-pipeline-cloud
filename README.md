@@ -148,10 +148,20 @@ Run the scripts in the `sql/` directory using a tool like **DBeaver**, **pgAdmin
 
 ## Airflow DAG Tasks
 
-* **extract\_movies**: Grabs raw data via API/scraping.
-* **load\_raw**: Loads the raw data into `raw_movies` table.
-* **transform\_to\_silver**: Transforms raw data into `silver_movies`.
-* **transform\_to\_gold**: Aggregates data to produce `gold_movies`.
+- **`extract_movies`**  
+  Fetches raw movie metadata from the TMDB API and stores it in the `raw_movies` table.
+
+- **`extract_genres`**  
+  Retrieves the latest genre mappings from TMDB and stores them in the `raw_genres` table.
+
+- **`extract_financials`**  
+  Collects budget and revenue details for each movie and saves them to the `raw_finances` table.
+
+- **`transform_to_silver`**  
+  Cleans, normalizes, and enriches the raw data (e.g., mapping genre IDs to names) and writes the results to the `movies_silver` table.
+
+- **`transform_to_gold`**  
+  Aggregates silver-level data (e.g., total revenue by genre) and creates analytical summaries in the `movies_gold` table.
 
 ---
 

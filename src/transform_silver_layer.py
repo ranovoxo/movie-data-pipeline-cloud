@@ -4,6 +4,7 @@ import os
 from sqlalchemy import create_engine
 from airflow.models import Variable
 import requests
+import ast  # Added to safely parse stringified lists
 
 POSTGRES_DB = Variable.get("POSTGRES_DB")
 POSTGRES_USER = Variable.get("POSTGRES_USER")
@@ -17,21 +18,15 @@ SOURCE_TABLE = "raw_movies"
 TARGET_TABLE = "movies_silver"
 
 # getting the genere's and what numbers they map to to include into dataset
-def get_genere_id_mapping():
+def get_genre_id_df():
+    """
+    Read genre ID-to-name mapping from a Postgres table and return as a DataFrame.
+    """
+    engine = create_engine(DB_URL)  # assumes DB_URL is already defined
 
-    url = "https://api.themoviedb.org/3/genre/movie/list"
-    params = {
-        "api_key": TMDB_API_KEY,
-        "language": "en-US"
-    }
-    
-    response = requests.get(url, params=params)
-    genres = response.json()["genres"]
+    genre_df = pd.read_sql("SELECT id, name FROM raw_genres", engine)
 
-    # convert to dictionary
-    genre_map = {genre["id"]: genre["name"] for genre in genres}
-
-    return genre_map
+    return genre_df
 
 
 def transform_to_silver():
@@ -68,14 +63,44 @@ def transform_to_silver():
         # drop duplicates
         df_silver = df_silver.drop_duplicates()
 
+        # --- NEW: Convert genre_ids from string to list if needed ---
+        df_silver['genre_ids'] = df_silver['genre_ids'].apply(
+            lambda x: ast.literal_eval(x) if isinstance(x, str) else x
+        )
+
         log_info("transform", f"Count after dropping duplicates: {len(df_silver)}")
 
         log_info("transform", "Data transformation completed. Writing to PostgreSQL...")
 
-        # TODO: get genere mappings and join with silver table:
-        
+        # get genere mappings and join with silver table:
+        genere_mappings = get_genre_id_df()
+
+        # create a copy with exploded genre_ids
+        df_genres = df_silver[['id', 'genre_ids']].explode('genre_ids').copy()
+
+        # convert to dictionary
+        genere_mapping_dict = dict(zip(genere_mappings['id'], genere_mappings['name']))
+
+        # map genre_id to genre_name
+        df_genres['name'] = df_genres['genre_ids'].map(genere_mapping_dict)
+
+        # group back into comma-separated genre names
+        df_genre_names = df_genres.groupby('id')['name'].apply(lambda x: ', '.join(sorted(set(x.dropna())))).reset_index()
+
+        # merge back into df_silver
+        df_silver = df_silver.drop(columns=['genre_ids']).merge(df_genre_names, on='id', how='left')
+
+        # rename genre_name column to genres
+        df_silver = df_silver.rename(columns={'name': 'genres'})
+
+        # replace missing or blank genres with 'Unknown'
+        df_silver_final = df_silver.copy()
+        df_silver_final['genres'] = df_silver_final['genres'].fillna('Unknown')
+        df_silver_final.loc[df_silver_final['genres'].str.strip() == '', 'genres'] = 'Unknown'
+
+
         # write to silver table (overwrite)
-        df_silver.to_sql(TARGET_TABLE, engine, if_exists='replace', index=False)
+        df_silver_final.to_sql(TARGET_TABLE, engine, if_exists='replace', index=False)
 
         log_info("transform", f"Data written to table `{TARGET_TABLE}` successfully.")
         log_load_end()

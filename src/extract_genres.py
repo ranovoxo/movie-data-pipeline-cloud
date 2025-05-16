@@ -1,0 +1,41 @@
+import requests
+import pandas as pd
+from logger import log_extract_start, log_extract_end, log_error, log_info
+from sqlalchemy import create_engine
+from airflow.models import Variable
+import os
+
+TMDB_API_KEY = Variable.get("MY_API_KEY")
+POSTGRES_USER=Variable.get("POSTGRES_USER")
+POSTGRES_PW=Variable.get("POSTGRES_PW")
+GENRE_MOVIE_LIST_URL = "https://api.themoviedb.org/3/genre/movie/list"
+DB_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PW}@postgres:5432/movie-ratings-db"
+
+def extract_genres():
+
+    params = {
+        "api_key": TMDB_API_KEY,
+        "language": "en-US"
+    }
+    
+    response = requests.get(GENRE_MOVIE_LIST_URL, params=params)
+    genres = response.json().get("genres", [])
+
+    # Convert to DataFrame
+    df_genres = pd.DataFrame(genres)
+
+    # ensure genre_id is int
+    df_genres['id'] = df_genres['id'].astype(int)
+
+    engine = create_engine(DB_URL)
+    
+    try:
+        log_info('extract', f"Inserting {len(df_genres)} records into 'raw_genres' table")
+
+        df_genres.to_sql('raw_genres', engine, if_exists='replace', index=False)
+
+        log_info('extract', "Data successfully written to 'raw_genres' table")
+    
+    except Exception as e:
+        log_error('extract', f"Failed to write data to 'raw_generes' table: {str(e)}")
+        raise

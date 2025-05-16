@@ -4,7 +4,7 @@ import os
 from sqlalchemy import create_engine
 from airflow.models import Variable
 import requests
-import ast  # Added to safely parse stringified lists
+import ast  # helps parse stringified lists
 
 POSTGRES_DB = Variable.get("POSTGRES_DB")
 POSTGRES_USER = Variable.get("POSTGRES_USER")

@@ -11,22 +11,8 @@ POSTGRES_PW=Variable.get("POSTGRES_PW")
 URL = "https://api.themoviedb.org/3/discover/movie"
 DB_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PW}@postgres:5432/movie-ratings-db"
 
-def extract_genres():
-    url = "https://api.themoviedb.org/3/genre/movie/list"
-    params = {
-        "api_key": TMDB_API_KEY,
-        "language": "en-US"
-    }
-    
-    response = requests.get(url, params=params)
-    genres = response.json().get("genres", [])
 
-    # Convert to DataFrame
-    genre_df = pd.DataFrame(genres)
-
-    return genre_df
-
-def extract_data():
+def extract_movies():
     # Database connection settings (replace with actual values or load from .env)
 
     log_extract_start()
@@ -69,12 +55,6 @@ def extract_data():
     log_info("extract",  f"Writing data to postgress database")
 
 
-    # use api to get genere information
-    df_genres = extract_genres()
-
-     # ensure genre_id is int
-    df_genres['id'] = df_genres['id'].astype(int)
-
     try:
         log_info('extract', f"Inserting {len(df)} records into 'raw_movies' table")
 
@@ -86,14 +66,4 @@ def extract_data():
         log_error('extract', f"Failed to write data to 'raw_movies' table: {str(e)}")
         raise
 
-    try:
-        log_info('extract', f"Inserting {len(df)} records into 'raw_genres' table")
-
-        df_genres.to_sql('raw_genres', engine, if_exists='replace', index=False)
-
-        log_info('extract', "Data successfully written to 'raw_genres' table")
-    
-    except Exception as e:
-        log_error('extract', f"Failed to write data to 'raw_generes' table: {str(e)}")
-        raise
     log_extract_end()

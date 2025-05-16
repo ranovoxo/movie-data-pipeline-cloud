@@ -37,6 +37,8 @@ def transform_to_gold():
         df = pd.read_sql("SELECT * FROM movies_silver", engine)
         log_info("gold_layer", f"Loaded {len(df)} rows from silver table")
 
+        # TODO: add more and useful gold layer tables
+        
         # Sample gold transformations
         top_movies = df.sort_values(by="vote_average", ascending=False).head(10)
 

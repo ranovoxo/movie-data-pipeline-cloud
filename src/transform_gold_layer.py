@@ -1,22 +1,16 @@
 import pandas as pd
 import logging
 import os
-from sqlalchemy import create_engine
 from logger import *
 from airflow.models import Variable
+from db.db_connector import get_engine
 
-POSTGRES_DB = Variable.get("POSTGRES_DB")
-POSTGRES_USER = Variable.get("POSTGRES_USER")
-POSTGRES_PW = Variable.get("POSTGRES_PW")
-
-DB_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PW}@postgres:5432/{POSTGRES_DB}"
 
 # Create output directory if it doesn't exist
 #CSV_DIR = os.path.join(os.path.dirname(__file__), "..", "tableau", "hyper_exports")
 #os.makedirs(CSV_DIR, exist_ok=True)
 
 CSV_DIR = "/opt/airflow/src/tableau/hyper_exports"
-
 
 def export_csv_for_tableau(tables_dict, csv_dir):
     
@@ -31,14 +25,14 @@ def transform_to_gold():
     log_info("gold_layer", "Starting transformation to gold...")
 
     try:
-        engine = create_engine(DB_URL)
+        engine = get_engine()
 
         # Load silver data
         df = pd.read_sql("SELECT * FROM movies_silver", engine)
         log_info("gold_layer", f"Loaded {len(df)} rows from silver table")
 
         # TODO: add more and useful gold layer tables
-        
+
         # Sample gold transformations
         top_movies = df.sort_values(by="vote_average", ascending=False).head(10)
 

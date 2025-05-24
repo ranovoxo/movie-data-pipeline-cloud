@@ -1,16 +1,13 @@
 import requests
 import pandas as pd
 from logger import log_extract_start, log_extract_end, log_error, log_info
-from sqlalchemy import create_engine
+from db.db_connector import get_engine
 from airflow.models import Variable
 from requests.adapters import HTTPAdapter, Retry
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 TMDB_API_KEY = Variable.get("MY_API_KEY")
-POSTGRES_USER = Variable.get("POSTGRES_USER")
-POSTGRES_PW = Variable.get("POSTGRES_PW")
 BUDGET_URL = "https://api.themoviedb.org/3/movie/"
-DB_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PW}@postgres:5432/movie-ratings-db"
 
 
 # This version uses ThreadPoolExecutor to fetch movie financials in parallel.
@@ -53,7 +50,7 @@ def fetch_movie_data(movie_id, session):
 def extract_movie_financials():
     log_extract_start()
     session = get_requests_session()
-    engine = create_engine(DB_URL)
+    engine = get_engine()
 
     try:
         df_movies = pd.read_sql("SELECT id FROM raw_movies", engine)

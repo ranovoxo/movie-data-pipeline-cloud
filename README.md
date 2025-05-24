@@ -120,9 +120,26 @@ docker-compose up --build
 
 This starts:
 
-* **Airflow Webserver**: [http://localhost:8080](http://localhost:8080)
-* **Scheduler**
-* **PostgreSQL**
+## Services Overview
+
+- **Airflow Webserver**  
+  Access the Airflow UI at: [http://localhost:8080](http://localhost:8080)
+
+- **Airflow Scheduler**  
+  Responsible for scheduling and triggering DAG tasks.
+
+- **PostgreSQL Database**  
+  Runs on `localhost:5432`. Used as the main data warehouse for storing:
+  - `raw_movies`
+  - `raw_genres`
+  - `raw_finances`
+  - `movies_silver`
+  - `movies_gold`
+
+- **pgAdmin**  
+  Access pgAdmin UI at: [http://localhost:5050](http://localhost:5050)  
+  Default login: `admin@admin.com / [your password in .env or Docker secrets]`
+
 
 ### Default Airflow credentials:
 

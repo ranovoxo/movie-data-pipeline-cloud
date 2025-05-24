@@ -1,15 +1,12 @@
+from logger import log_extract_start, log_extract_end, log_error, log_info
+from airflow.models import Variable
+from db.db_connector import get_engine
+import os
 import requests
 import pandas as pd
-from logger import log_extract_start, log_extract_end, log_error, log_info
-from sqlalchemy import create_engine
-from airflow.models import Variable
-import os
 
 TMDB_API_KEY = Variable.get("MY_API_KEY")
-POSTGRES_USER=Variable.get("POSTGRES_USER")
-POSTGRES_PW=Variable.get("POSTGRES_PW")
 URL = "https://api.themoviedb.org/3/discover/movie"
-DB_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PW}@postgres:5432/movie-ratings-db"
 
 
 def extract_movies():
@@ -50,7 +47,8 @@ def extract_movies():
     log_info("extract",  f"Loading data into dataframe")
 
     df = pd.DataFrame(all_movies)
-    engine = create_engine(DB_URL)
+    
+    engine = get_engine()
 
     log_info("extract",  f"Writing data to postgress database")
 

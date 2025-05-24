@@ -50,11 +50,13 @@ services:
       JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
       SPARK_HOME: /opt/spark
       PYSPARK_PYTHON: python3
+      PYTHONPATH: /opt/airflow
     volumes:
       - ./dags:/opt/airflow/dags
       - ./src:/opt/airflow/src
       - ./logs:/opt/airflow/logs
       - ./sql:/opt/airflow/sql
+      - ./db:/opt/airflow/db    
       - /var/run/docker.sock:/var/run/docker.sock
       - ${TABLEAU_EXPORT_PATH}:/opt/airflow/src/tableau/hyper_exports
     ports:
@@ -73,11 +75,13 @@ services:
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PW}@postgres:5432/${POSTGRES_DB}
+      PYTHONPATH: /opt/airflow
     volumes:
       - ./dags:/opt/airflow/dags
       - ./src:/opt/airflow/src
       - ./logs:/opt/airflow/logs
       - ./sql:/opt/airflow/sql
+      - ./db:/opt/airflow/db     
       - /var/run/docker.sock:/var/run/docker.sock
       - ${TABLEAU_EXPORT_PATH}:/opt/airflow/src/tableau/hyper_exports
     command: scheduler
@@ -86,6 +90,7 @@ services:
 
 volumes:
   postgres_data:
+  
 
 networks:
   airflow_net:

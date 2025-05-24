@@ -1,18 +1,12 @@
 import pandas as pd
 from logger import *
 import os
-from sqlalchemy import create_engine
 from airflow.models import Variable
+from db.db_connector import get_engine
 import requests
 import ast  # helps parse stringified lists
 
-POSTGRES_DB = Variable.get("POSTGRES_DB")
-POSTGRES_USER = Variable.get("POSTGRES_USER")
-POSTGRES_PW = Variable.get("POSTGRES_PW")
 TMDB_API_KEY = Variable.get("MY_API_KEY")
-
-# SQLAlchemy connection string
-DB_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PW}@postgres:5432/{POSTGRES_DB}"
 
 SOURCE_TABLE = "raw_movies"
 TARGET_TABLE = "movies_silver"
@@ -22,7 +16,7 @@ def get_genre_id_df():
     """
     Read genre ID-to-name mapping from a Postgres table and return as a DataFrame.
     """
-    engine = create_engine(DB_URL)  # assumes DB_URL is already defined
+    engine = get_engine()  # assumes DB_URL is already defined
 
     genre_df = pd.read_sql("SELECT id, name FROM raw_genres", engine)
 
@@ -36,7 +30,7 @@ def transform_to_silver():
 
     try:
         # create database engine
-        engine = create_engine(DB_URL)
+        engine = get_engine()
 
         # read raw data from PostgreSQL
         df = pd.read_sql(f"SELECT * FROM {SOURCE_TABLE}", engine)

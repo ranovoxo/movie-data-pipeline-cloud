@@ -4,19 +4,20 @@ from airflow.operators.python_operator import PythonOperator
 from airflow.operators.bash import BashOperator
 from airflow.utils.dates import days_ago
 from datetime import datetime
+
 import os
 import sys
 
 # get path of python files to run
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
-from extract_movies import extract_movies
-from extract_genres import extract_genres
-from extract_budget_revenue import extract_movie_financials
+from src.extract_movies import extract_movies
+from src.extract_genres import extract_genres
+from src.extract_budget_revenue import extract_movie_financials
 
-from transform_silver_layer import transform_to_silver
-from transform_gold_layer import transform_to_gold
-from logger import *
+from src.transform_silver_layer import transform_to_silver
+from src.transform_gold_layer import transform_to_gold
+from src.logger import *
 
 default_args = {
     'owner': 'airflow',

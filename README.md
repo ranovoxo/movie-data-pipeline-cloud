@@ -29,6 +29,11 @@ movie_data_pipeline/
 │           ├── gold_top_movies.csv
 │           └── yearly_counts.csv
 │
+├── ml/
+│   ├── predict_genere.py 
+│   ├── preprocess_text.py          # Preprocess text for overview column for machine learning training
+│   ├── train_genre_multilabel.py   # Train the model
+│   ├── utils.py
 ├── sql/
 │   └── create_table.sql            # PostgreSQL table creation script
 │

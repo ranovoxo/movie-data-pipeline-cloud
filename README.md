@@ -10,35 +10,50 @@ This is a fully Dockerized data engineering pipeline that extracts movie data fr
 
 ## Project Structure
 
-```
 movie_data_pipeline/
 │
 ├── dags/
-│   └── movie_etl_dag.py         # Airflow DAG definition
+│   ├── init_schema.py              # Creates DB schema on Airflow start
+│   └── movie_etl_dag.py            # Airflow DAG definition
 │
 ├── src/
-│   ├── extract.py               # Extract movie data
-│   ├── transform.py             # Clean and transform raw data
-│   ├── load.py                  # Load data into PostgreSQL
-│   └── logger.py                # Custom logger for ETL steps
+│   ├── extract_movies.py           # Extract movie metadata
+│   ├── extract_genres.py           # Extract genre data
+│   ├── extract_budget_revenue.py   # Extract budget and revenue data
+│   ├── transform_silver_layer.py   # Clean and deduplicate raw data
+│   ├── transform_gold_layer.py     # Enrich and finalize analytics-ready data
+│   ├── logger.py                   # Custom logger for ETL steps
+│   └── tableau/
+│       └── hyper_exports/          # CSVs for Tableau dashboards
+│           ├── avg_rating_by_lang.csv
+│           ├── gold_top_movies.csv
+│           └── yearly_counts.csv
 │
 ├── sql/
-│   ├── create_tables.sql        # Raw, silver, and gold schema
-│   ├── transform_silver.sql     # Transform raw to silver
-│   └── transform_gold.sql       # Transform silver to gold
+│   └── create_table.sql            # PostgreSQL table creation script
 │
-├── logs/                        # ETL logs (host-mounted in Docker)
-│   └── etl/
-│       ├── extract.log
-│       ├── transform.log
-│       └── load.log
+├── db/
+│   └── db_connector.py             # DB connection helper
 │
-├── docker-compose.yml           # Docker config for Airflow & Postgres
-├── Dockerfile                   # Custom Airflow image with requirements
-├── requirements.txt             # Python dependencies
-├── .env                         # Environment variables for DB
-└── README.md                    # Project documentation
-```
+├── logs/                           # ETL & Airflow logs
+│   ├── etl/
+│   │   ├── extract.log
+│   │   ├── transform.log
+│   │   └── load.log
+│   ├── scheduler/                  # Airflow scheduler logs
+│   ├── dag_id=movie_data_etl/     # Logs by DAG run and task
+│   └── dag_processor_manager/     # DAG processor logs
+│
+├── jars/
+│   └── postgresql-42.7.1.jar       # JDBC driver for PostgreSQL
+│
+├── docker-compose.yml             # Docker config for Airflow, Postgres, etc.
+├── Dockerfile                     # Custom Airflow image with dependencies
+├── requirements.txt               # Python dependencies
+├── .env                           # Environment variables (DB, secrets)
+├── README.md                      # Project documentation
+└── command_line_notes.md          # Helpful CLI commands during development
+
 
 ---
 

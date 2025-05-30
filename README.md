@@ -9,7 +9,7 @@ This is a fully Dockerized data engineering pipeline that extracts movie data fr
 ---
 
 ## Project Structure
-
+```
 movie_data_pipeline/
 │
 ├── dags/
@@ -53,7 +53,7 @@ movie_data_pipeline/
 ├── .env                           # Environment variables (DB, secrets)
 ├── README.md                      # Project documentation
 └── command_line_notes.md          # Helpful CLI commands during development
-
+```
 
 ---
 

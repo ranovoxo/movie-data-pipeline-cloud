@@ -10,6 +10,7 @@ import sys
 
 # get path of python files to run
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../ml')))
 
 from src.extract_movies import extract_movies
 from src.extract_genres import extract_genres
@@ -17,6 +18,7 @@ from src.extract_budget_revenue import extract_movie_financials
 
 from src.transform_silver_layer import transform_to_silver
 from src.transform_gold_layer import transform_to_gold
+from ml.preprocess_text import preprocess_text
 from src.logger import *
 
 default_args = {
@@ -98,4 +100,11 @@ transform_movies_gold_task = PythonOperator(
     dag=dag,
 )
 
-extract_movies_task >> extract_genres_task >> extract_budget_revenue_task >> transform_movies_silver_task >> transform_movies_gold_task
+preprocess_text_task = PythonOperator(
+    task_id='preprocess_text_task',
+    python_callable=preprocess_text,
+    provide_context=True,
+    dag=dag,
+)
+
+extract_movies_task >> extract_genres_task >> extract_budget_revenue_task >> transform_movies_silver_task >> transform_movies_gold_task >> preprocess_text_task

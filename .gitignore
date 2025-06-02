@@ -54,3 +54,4 @@ derby.log
 *.bak
 *.swp
 *.tmp
+ml/*.joblib

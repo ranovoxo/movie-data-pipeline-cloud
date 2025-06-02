@@ -1,10 +1,10 @@
-from logger import *
-from airflow.models import Variable
-from db.db_connector import get_engine
 import re
 import logging
 import os
 import pandas as pd
+from logger import *
+from airflow.models import Variable
+from db.db_connector import get_engine
 
 
 def clean_text(text):

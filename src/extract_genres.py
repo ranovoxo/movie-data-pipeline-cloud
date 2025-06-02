@@ -1,9 +1,9 @@
+import os
 import requests
 import pandas as pd
 from logger import log_extract_start, log_extract_end, log_error, log_info
 from db.db_connector import get_engine
 from airflow.models import Variable
-import os
 
 TMDB_API_KEY = Variable.get("MY_API_KEY")
 GENRE_MOVIE_LIST_URL = "https://api.themoviedb.org/3/genre/movie/list"

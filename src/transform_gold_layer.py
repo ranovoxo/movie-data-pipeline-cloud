@@ -5,7 +5,6 @@ from logger import *
 from airflow.models import Variable
 from db.db_connector import get_engine
 
-
 # Create output directory if it doesn't exist
 #CSV_DIR = os.path.join(os.path.dirname(__file__), "..", "tableau", "hyper_exports")
 #os.makedirs(CSV_DIR, exist_ok=True)

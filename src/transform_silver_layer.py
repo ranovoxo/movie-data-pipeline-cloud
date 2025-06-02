@@ -1,10 +1,10 @@
 import pandas as pd
-from logger import *
 import os
-from airflow.models import Variable
-from db.db_connector import get_engine
 import requests
-import ast  # helps parse stringified lists
+import ast  # helps parse stringified listsfrom airflow.models import Variable
+from db.db_connector import get_engine
+from logger import *
+from airflow.models import Variable
 
 TMDB_API_KEY = Variable.get("MY_API_KEY")
 

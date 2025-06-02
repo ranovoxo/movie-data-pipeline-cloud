@@ -1,13 +1,5 @@
-from airflow.providers.docker.operators.docker import DockerOperator
-from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
-from airflow.operators.bash import BashOperator
-from airflow.utils.dates import days_ago
-from datetime import datetime
-
 import os
 import sys
-
 # get path of python files to run
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../ml')))
@@ -15,11 +7,18 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../m
 from src.extract_movies import extract_movies
 from src.extract_genres import extract_genres
 from src.extract_budget_revenue import extract_movie_financials
-
 from src.transform_silver_layer import transform_to_silver
 from src.transform_gold_layer import transform_to_gold
 from ml.preprocess_text import preprocess_text
+from ml.train_genre_multilabel import start_training
 from src.logger import *
+from airflow.providers.docker.operators.docker import DockerOperator
+from airflow import DAG
+from airflow.operators.python_operator import PythonOperator
+from airflow.operators.bash import BashOperator
+from airflow.utils.dates import days_ago
+from datetime import datetime
+
 
 default_args = {
     'owner': 'airflow',
@@ -107,4 +106,12 @@ preprocess_text_task = PythonOperator(
     dag=dag,
 )
 
-extract_movies_task >> extract_genres_task >> extract_budget_revenue_task >> transform_movies_silver_task >> transform_movies_gold_task >> preprocess_text_task
+train_genre_ml = PythonOperator(
+    task_id='train_genre_ml',
+    python_callable=start_training,
+    provide_context=True,
+    dag=dag,
+)
+
+
+extract_movies_task >> extract_genres_task >> extract_budget_revenue_task >> transform_movies_silver_task >> transform_movies_gold_task >> preprocess_text_task >> train_genre_ml

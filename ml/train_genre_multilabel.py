@@ -5,35 +5,50 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.multiclass import OneVsRestClassifier
-from preprocess_text import clean_text
+from db.db_connector import get_engine
+from iterstrat.ml_stratifiers import MultilabelStratifiedShuffleSplit
 
-# Load your dataset
-df = pd.read_csv('path/to/movies.csv')  # Update path accordingly
 
-# Preprocess genres column into list
-df['genre_list'] = df['genres'].fillna("").apply(lambda x: x.split('|'))
+TABLE_NAME = 'cleaned_overview_text'
 
-# Clean the overview text
-df['cleaned_overview'] = df['overview'].fillna("").apply(clean_text)
+def get_data():
+    engine = get_engine()
+    df = pd.read_sql(f"SELECT * FROM {TABLE_NAME}", engine)
+    return df
+    
+def train_data(df):
+    # preprocess genres column into list
+    df['genre_list'] = df['genres'].fillna("").apply(lambda x: x.split('|'))
+    print(df['genre_list'])
+    # binarize labels
+    mlb = MultiLabelBinarizer()
+    y = mlb.fit_transform(df['genre_list'])
 
-# Binarize labels
-mlb = MultiLabelBinarizer()
-y = mlb.fit_transform(df['genre_list'])
+    # vectorize text
+    vectorizer = TfidfVectorizer(max_features=5000)
+    X = vectorizer.fit_transform(df['cleaned_overview'])
 
-# Vectorize text
-vectorizer = TfidfVectorizer(max_features=5000)
-X = vectorizer.fit_transform(df['cleaned_overview'])
+    # training split for multi label data
+    msss = MultilabelStratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
+    for train_index, test_index in msss.split(X, y):
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
 
-# Train-test split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    # train model
+    clf = OneVsRestClassifier(LogisticRegression(max_iter=1000))
+    clf.fit(X_train, y_train)
 
-# Train model
-clf = OneVsRestClassifier(LogisticRegression(max_iter=1000))
-clf.fit(X_train, y_train)
+    # save artifacts for inference for next task "predict_genere"
+    joblib.dump(clf, 'ml/genre_model.joblib')
+    print("Training complete and model genre_model.joblib saved.")
+    joblib.dump(vectorizer, 'ml/vectorizer.joblib')
+    print("Training complete and model vectorizer.joblib saved.")
+    joblib.dump(mlb, 'ml/label_binarizer.joblib')
+    print("Training complete and model label_binarizer.joblib saved.")
 
-# Save artifacts for inference
-joblib.dump(clf, 'ml/genre_model.joblib')
-joblib.dump(vectorizer, 'ml/vectorizer.joblib')
-joblib.dump(mlb, 'ml/label_binarizer.joblib')
+def start_training():
+    df = get_data()
+    train_data(df)
 
-print("Training complete and models saved.")
+if __name__ == "__main__":
+    start_training()

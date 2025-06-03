@@ -4,6 +4,7 @@ from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.multiclass import OneVsRestClassifier
 from db.db_connector import get_engine
 from iterstrat.ml_stratifiers import MultilabelStratifiedShuffleSplit
@@ -37,7 +38,7 @@ def train_data(df):
         y_train, y_test = y[train_index], y[test_index]
 
     # train model
-    clf = OneVsRestClassifier(LogisticRegression(max_iter=1000))
+    clf = OneVsRestClassifier(RandomForestClassifier(n_estimators=100))
     clf.fit(X_train, y_train)
 
     y_train = clf.predict(X_train)

@@ -11,6 +11,7 @@ from src.transform_silver_layer import transform_to_silver
 from src.transform_gold_layer import transform_to_gold
 from ml.preprocess_text import preprocess_text
 from ml.train_genre_multilabel import start_training
+from ml.predict_genre import start_genre_predictions
 from src.logger import *
 from airflow.providers.docker.operators.docker import DockerOperator
 from airflow import DAG
@@ -61,8 +62,6 @@ def transform_gold_layer():
     transform_to_gold()
     log_transform_end()
 
-
-
 extract_movies_task = PythonOperator(
     task_id='extract_movies_task',
     python_callable=get_movies,
@@ -83,14 +82,12 @@ extract_budget_revenue_task = PythonOperator(
     dag=dag,
 )
 
-
 transform_movies_silver_task = PythonOperator(
     task_id='transform_movies_silver_task',
     python_callable=transform_to_silver_layer,
     provide_context=True,  # Optional, if you're not using context vars, you can remove this
     dag=dag,
 )
-
 
 transform_movies_gold_task = PythonOperator(
     task_id='transform_movies_gold_task',
@@ -113,5 +110,11 @@ train_genre_ml = PythonOperator(
     dag=dag,
 )
 
+start_genre_predictions_ml = PythonOperator(
+    task_id='start_genre_predictions_ml',
+    python_callable=start_genre_predictions,
+    provide_context=True,
+    dag=dag,
+)
 
-extract_movies_task >> extract_genres_task >> extract_budget_revenue_task >> transform_movies_silver_task >> transform_movies_gold_task >> preprocess_text_task >> train_genre_ml
+extract_movies_task >> extract_genres_task >> extract_budget_revenue_task >> transform_movies_silver_task >> transform_movies_gold_task >> preprocess_text_task >> train_genre_ml >> start_genre_predictions_ml

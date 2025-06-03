@@ -7,6 +7,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.multiclass import OneVsRestClassifier
 from db.db_connector import get_engine
 from iterstrat.ml_stratifiers import MultilabelStratifiedShuffleSplit
+from sklearn.metrics import classification_report
 
 
 TABLE_NAME = 'cleaned_overview_text'
@@ -18,8 +19,9 @@ def get_data():
     
 def train_data(df):
     # preprocess genres column into list
-    df['genre_list'] = df['genres'].fillna("").apply(lambda x: x.split('|'))
+    df['genre_list'] = df['genres'].fillna("").apply(lambda x: [g.strip() for g in x.split(',')])
     print(df['genre_list'])
+
     # binarize labels
     mlb = MultiLabelBinarizer()
     y = mlb.fit_transform(df['genre_list'])
@@ -37,6 +39,10 @@ def train_data(df):
     # train model
     clf = OneVsRestClassifier(LogisticRegression(max_iter=1000))
     clf.fit(X_train, y_train)
+
+    y_train = clf.predict(X_train)
+    print(classification_report(y_train, y_train, target_names=mlb.classes_))
+
 
     # save artifacts for inference for next task "predict_genere"
     joblib.dump(clf, 'ml/genre_model.joblib')

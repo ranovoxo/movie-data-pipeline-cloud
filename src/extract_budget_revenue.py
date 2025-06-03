@@ -70,6 +70,9 @@ def extract_movie_financials():
                     log_info("extract", f"Processed {i}/{len(movie_ids)}")
 
         df_financials = pd.DataFrame(financial_data)
+
+        # dropping duplicate movies
+        df_financials = df_financials.drop_duplicates()
         log_info("extract", f"Collected financials for {len(df_financials)} movies")
 
         df_financials.to_sql('raw_finances', engine, if_exists='replace', index=False)

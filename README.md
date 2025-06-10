@@ -155,6 +155,11 @@ This starts:
   - `raw_finances`
   - `movies_silver`
   - `movies_gold`
+  - `ml_genre_predictions`
+  - `gold_avg_rating_by_language`
+  - `gold_top_movies`
+  - `gold_yearly_counts`
+
 
 - **pgAdmin**  
   Access pgAdmin UI at: [http://localhost:5050](http://localhost:5050)  
@@ -197,8 +202,17 @@ Run the scripts in the `sql/` directory using a tool like **DBeaver**, **pgAdmin
 - **`transform_to_silver`**  
   Cleans, normalizes, and enriches the raw data (e.g., mapping genre IDs to names) and writes the results to the `movies_silver` table.
 
-- **`transform_to_gold`**  
-  Aggregates silver-level data (e.g., total revenue by genre) and creates analytical summaries in the `movies_gold` table.
+### Gold Tables
+
+#### `gold_avg_rating_by_language`
+Provides the average movie rating grouped by the primary spoken language. Useful for analyzing how movies perform across different linguistic audiences.
+
+#### `gold_top_movies`
+Contains the top-rated movies, typically filtered by vote count to ensure quality. Highlights the most critically acclaimed or popular films in the dataset.
+
+#### `gold_yearly_counts`
+Summarizes the number of movies released each year. Useful for visualizing historical trends in movie production volume over time.
+
 
 ---
 

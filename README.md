@@ -95,7 +95,7 @@ movie_data_pipeline/
     Trains a multi-label classifier to predict genres based on preprocessed plot summaries.
 
   - `predict_genere.py`  
-    Applies the trained model to generate genre predictions for new or unlabeled movie data.
+    Applies the trained model to generate genre predictions.
 
   - `utils.py`  
     Contains shared helper functions used across the ML pipeline.

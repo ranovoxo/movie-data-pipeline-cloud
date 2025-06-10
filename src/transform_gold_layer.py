@@ -9,14 +9,15 @@ from db.db_connector import get_engine
 #CSV_DIR = os.path.join(os.path.dirname(__file__), "..", "tableau", "hyper_exports")
 #os.makedirs(CSV_DIR, exist_ok=True)
 
-CSV_DIR = "/opt/airflow/src/tableau/hyper_exports"
+import os
 
-def export_csv_for_tableau(tables_dict, csv_dir):
-    
+JSON_DIR = "/opt/airflow/src/tableau/hyper_exports"
+
+def export_json_for_tableau(tables_dict, json_dir):
     for name, df in tables_dict.items():
-        csv_path = os.path.join(csv_dir, f"{name}.csv")
-        df.to_csv(csv_path, index=False)
-        print(f"✅ Exported `{name}` to CSV: {csv_path}")
+        json_path = os.path.join(json_dir, f"{name}.json")
+        df.to_json(json_path, orient="records", lines=True)  # or lines=False for pretty JSON
+        print(f"✅ Exported `{name}` to JSON: {json_path}")
 
 
 def transform_to_gold():
@@ -30,16 +31,27 @@ def transform_to_gold():
         df = pd.read_sql("SELECT * FROM movies_silver", engine)
         log_info("gold_layer", f"Loaded {len(df)} rows from silver table")
 
+        # datatype might be saved differently in Postgres, so need to change befor exporting for tableau.
+        # TODO: verify datatype in postgress
+        #df['release_date'] = pd.to_datetime(df['release_date'], errors='coerce')
         # TODO: add more and useful gold layer tables
 
-        # Sample gold transformations
-        top_movies = df.sort_values(by="vote_average", ascending=False).head(10)
+        # using a weighted movie scoring approach for top movies
+        C = df["vote_average"].mean()
+        m = 500  # minimum votes required
+        top_movies = df[df["vote_count"] >= m].copy()
+        top_movies["weighted_score"] = (
+        (top_movies["vote_count"] / (top_movies["vote_count"] + m)) * top_movies["vote_average"]
+        + (m / (top_movies["vote_count"] + m)) * C
+        )
+        top_movies = top_movies.sort_values(by="weighted_score", ascending=False).head(15)
 
         avg_rating_by_lang = df.groupby("original_language")["vote_average"].mean().reset_index()
         avg_rating_by_lang.columns = ["language", "avg_vote"]
 
-        yearly_counts = df['release_date'].dt.year.value_counts().reset_index()
-        yearly_counts.columns = ['release_year', 'movie_count']
+        release_date_dt = pd.to_datetime(df['release_date'], errors='coerce')
+        yearly_counts = release_date_dt.dt.year.value_counts().reset_index()
+        yearly_counts.columns = ['year', 'count']
 
         # Write to gold tables
         top_movies.to_sql("gold_top_movies", engine, if_exists="replace", index=False)
@@ -48,14 +60,15 @@ def transform_to_gold():
 
         log_info("gold_layer", "Gold tables written successfully.")
 
-        export_csv_for_tableau(
-                    {
+        export_json_for_tableau(
+            {
                 "gold_top_movies": top_movies,
                 "avg_rating_by_lang": avg_rating_by_lang,
                 "yearly_counts": yearly_counts
-                },
-                CSV_DIR
-            )
+            },
+            JSON_DIR
+        )
+
 
     except Exception as e:
         log_error(f"Gold transformation failed: {str(e)}")

@@ -61,9 +61,12 @@ def transform_to_silver():
         ]].dropna()
         log_info("transform", f"After dropna: {len(df_silver)}")
 
-        # convert release_date to datetime
-        df_silver['release_date'] = pd.to_datetime(df_silver['release_date'], errors='coerce')
+        # convert to string in consistent format, ignoring NaT (which will become NaT again)
+        #df_silver['release_date'] = df_silver['release_date'].dt.strftime('%Y-%m-%d')
 
+        df_silver['release_date'] = pd.to_datetime(df_silver['release_date'], errors='coerce')
+        df_silver['release_date'] = df_silver['release_date'].dt.strftime('%Y-%m-%d')  # ISO date string
+        
         # --- NEW: Convert genre_ids from string to list if needed ---
         df_silver['genre_ids'] = df_silver['genre_ids'].apply(
             lambda x: ast.literal_eval(x) if isinstance(x, str) else x

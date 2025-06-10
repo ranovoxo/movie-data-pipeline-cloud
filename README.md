@@ -7,6 +7,11 @@ Here's the **README.md** file for your Movie Data ETL Pipeline project:
 This is a fully Dockerized data engineering pipeline that extracts movie data from a public API, stores raw data in PostgreSQL, transforms it into silver and gold tables, and orchestrates the entire process with Apache Airflow. The project also includes structured logging to track ETL stages in detail.
 
 ---
+# 🎬 Movie Analytics Dashboard
+
+👉 [**Explore the interactive Top Movies chart on Tableau Public**](https://public.tableau.com/views/Movies-ETL-Pipeline-Dashboard/Sheet1)
+
+Get insights on movie ratings, genres, and yearly trends through an interactive Tableau dashboard. Hover over each bar to see vote counts, genres, and release dates. More visuals to come!
 
 ## Project Structure
 ```

@@ -32,7 +32,7 @@ def transform_to_silver():
         # create database engine
         engine = get_engine()
 
-        """read raw data from PostgreSQL, do a ranking on vote_count 
+        """read raw data from PostgreSQL, group records by id, do a ranking on vote_count 
         and get one with highest which should be latest record
         eliminating duplicates"""
         df = pd.read_sql(f"""SELECT r.*

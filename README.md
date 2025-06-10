@@ -84,6 +84,22 @@ movie_data_pipeline/
 
 * Apache Airflow manages and schedules all tasks.
 
+### Machine Learning
+
+  Preprocesses plot summaries and trains a multi-label classification model to predict movie genres from the overview text.
+
+  - `preprocess_text.py`  
+    Cleans and tokenizes the `overview` text column to prepare it for model training.
+
+  - `train_genre_multilabel.py`  
+    Trains a multi-label classifier to predict genres based on preprocessed plot summaries.
+
+  - `predict_genere.py`  
+    Applies the trained model to generate genre predictions for new or unlabeled movie data.
+
+  - `utils.py`  
+    Contains shared helper functions used across the ML pipeline.
+
 ---
 
 ## Technologies Used

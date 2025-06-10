@@ -32,8 +32,18 @@ def transform_to_silver():
         # create database engine
         engine = get_engine()
 
-        # read raw data from PostgreSQL
-        df = pd.read_sql(f"SELECT * FROM {SOURCE_TABLE}", engine)
+        """read raw data from PostgreSQL, do a ranking on vote_count 
+        and get one with highest which should be latest record
+        eliminating duplicates"""
+        df = pd.read_sql(f"""SELECT r.*
+                            FROM (
+                            SELECT *, ROW_NUMBER() OVER (
+                                PARTITION BY id 
+                                ORDER BY vote_count DESC, load_timestamp DESC  -- fallback to timestamp
+                            ) AS rn
+                            FROM {SOURCE_TABLE}
+                        ) r
+                        WHERE r.rn = 1;""", engine)
 
         log_info("transform", f"{len(df)} Rows read from source table `{SOURCE_TABLE}`")
 
@@ -53,9 +63,6 @@ def transform_to_silver():
 
         # convert release_date to datetime
         df_silver['release_date'] = pd.to_datetime(df_silver['release_date'], errors='coerce')
-
-        # drop duplicates
-        df_silver = df_silver.drop_duplicates()
 
         # --- NEW: Convert genre_ids from string to list if needed ---
         df_silver['genre_ids'] = df_silver['genre_ids'].apply(

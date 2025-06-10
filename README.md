@@ -108,7 +108,7 @@ movie_data_pipeline/
 * **PostgreSQL**
 * **Apache Airflow 2.7+**
 * **Docker & Docker Compose**
-* **BeautifulSoup / Requests** (for scraping)
+* **Requests** 
 * **Pandas** (for data wrangling)
 * **Custom Logging** (per ETL step)
 

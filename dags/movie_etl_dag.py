@@ -38,19 +38,13 @@ dag = DAG(
 )
 
 def get_movies():
-    log_extract_start()
     extract_movies()  
-    log_extract_end()
 
 def get_genres():
-    log_extract_start()
     extract_genres()
-    log_extract_end()
 
 def get_budget_revenue():
-    log_extract_start()
     extract_movie_financials()
-    log_extract_end()
 
 def transform_to_silver_layer():
     log_transform_start()

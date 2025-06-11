@@ -11,9 +11,9 @@ URL = "https://api.themoviedb.org/3/discover/movie"
 
 
 def extract_movies():
+    # this sets up the logger and the parameter sets the postfix of the logfile name
+    log_extract_start("movies") 
     # Database connection settings (replace with actual values or load from .env)
-
-    log_extract_start()
     all_movies = []
     page = 1
     total_pages = 1  # will be updated from the API response

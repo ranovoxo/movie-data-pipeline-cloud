@@ -1,5 +1,9 @@
 Here's the **README.md** file for your Movie Data ETL Pipeline project:
 
+## Author
+
+**Randal Carr**  
+
 ---
 
 # Movie Data ETL Pipeline with Airflow & PostgreSQL (Dockerized)

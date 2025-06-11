@@ -10,7 +10,7 @@ GENRE_MOVIE_LIST_URL = "https://api.themoviedb.org/3/genre/movie/list"
 
 
 def extract_genres():
-
+    log_extract_start("genres")
     params = {
         "api_key": TMDB_API_KEY,
         "language": "en-US"
@@ -37,3 +37,4 @@ def extract_genres():
     except Exception as e:
         log_error('extract', f"Failed to write data to 'raw_generes' table: {str(e)}")
         raise
+    log_extract_end()

@@ -27,6 +27,7 @@ def get_requests_session():
 
 # Fetch data for a single movie
 def fetch_movie_data(movie_id, session):
+
     url = f"{BUDGET_URL}{movie_id}"
     params = {"api_key": TMDB_API_KEY, "language": "en-US"}
     try:
@@ -48,7 +49,8 @@ def fetch_movie_data(movie_id, session):
 
 # Main function
 def extract_movie_financials():
-    log_extract_start()
+    log_extract_start("financial_data")
+    
     session = get_requests_session()
     engine = get_engine()
 

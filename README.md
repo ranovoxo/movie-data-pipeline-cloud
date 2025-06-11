@@ -17,6 +17,13 @@ This is a fully Dockerized data engineering pipeline that extracts movie data fr
 
 Get insights on movie ratings, genres, and yearly trends through an interactive Tableau dashboard. Hover over each bar to see vote counts, genres, and release dates. More visuals to come!
 
+👉 [**Explore the interactive Top Movies ROI chart on Tableau Public**](https://public.tableau.com/app/profile/randal.carr/viz/TopMoviesROI/Sheet1?publish=yes)
+
+Get insights on movie budgets, revenues, and ROI through an interactive Tableau dashboard. Hover over each point to see movie titles, budgets, revenues, and profitability. 
+---
+
+
+
 ## Project Structure
 ```
 movie_data_pipeline/

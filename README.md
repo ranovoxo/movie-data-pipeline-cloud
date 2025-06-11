@@ -35,7 +35,7 @@ movie_data_pipeline/
 │           └── yearly_counts.csv
 │
 ├── ml/
-│   ├── predict_genere.py 
+│   ├── predict_genre.py 
 │   ├── preprocess_text.py          # Preprocess text for overview column for machine learning training
 │   ├── train_genre_multilabel.py   # Train the model
 │   ├── utils.py
@@ -68,6 +68,7 @@ movie_data_pipeline/
 ---
 
 ## Pipeline Stages
+[API] → [Extract Scripts] → [PostgreSQL Raw Tables] → [Silver & Gold Tables] → [Tableau/ML Model]
 
 ### Extract
 
@@ -253,8 +254,12 @@ These logs help you monitor step-by-step progress, errors, and runtime metrics. 
 ```plaintext
 2025-05-05 12:00:00 - INFO - Starting extraction task...
 ```
-
 ---
+### 🎯 Genre Prediction Model
+- **Model:** Logistic Regression (multi-label)
+- **Input:** Tokenized `overview` text
+- **Target:** One-hot encoded genres
+- **Performance:** ~XX% accuracy on validation set
 
 ## Improvements & Ideas
 

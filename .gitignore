@@ -54,4 +54,4 @@ derby.log
 *.bak
 *.swp
 *.tmp
-ml/*.joblib
+ml/multi_label_classification/*.joblib

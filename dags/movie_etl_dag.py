@@ -9,9 +9,9 @@ from src.extract_genres import extract_genres
 from src.extract_budget_revenue import extract_movie_financials
 from src.transform_silver_layer import transform_to_silver
 from src.transform_gold_layer import transform_to_gold
-from ml.preprocess_text import preprocess_text
-from ml.train_genre_multilabel import start_training
-from ml.predict_genre import start_genre_predictions
+from ml.multi_label_classification.preprocess_text import preprocess_text
+from ml.multi_label_classification.train_genre_multilabel import start_training
+from ml.multi_label_classification.predict_genre import start_genre_predictions
 from src.logger import *
 from airflow.providers.docker.operators.docker import DockerOperator
 from airflow import DAG

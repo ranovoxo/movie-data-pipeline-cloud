@@ -13,7 +13,7 @@ URL = "https://api.themoviedb.org/3/discover/movie"
 def extract_movies():
     # this sets up the logger and the parameter sets the postfix of the logfile name
     log_extract_start("movies") 
-    # Database connection settings (replace with actual values or load from .env)
+
     all_movies = []
     page = 1
     total_pages = 1  # will be updated from the API response
@@ -44,9 +44,9 @@ def extract_movies():
         log_error('extract', f"Exception occurred during movie fetch: {str(e)}")
         raise
 
-    # Convert to DataFrame and save to PostgreSQL
     log_info("extract",  f"Loading data into dataframe")
 
+    # convert to DataFrame and save to PostgreSQL
     df = pd.DataFrame(all_movies)
     
     # add timestamp to each row
@@ -54,7 +54,6 @@ def extract_movies():
     engine = get_engine()
 
     log_info("extract",  f"Writing data to postgress database")
-
 
     try:
         log_info('extract', f"Inserting {len(df)} records into 'raw_movies' table")

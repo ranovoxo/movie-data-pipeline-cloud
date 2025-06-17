@@ -11,6 +11,12 @@ Here's the **README.md** file for your Movie Data ETL Pipeline project:
 This is a fully Dockerized data engineering pipeline that extracts movie data from a public API, stores raw data in PostgreSQL, transforms it into silver and gold tables, and orchestrates the entire process with Apache Airflow. The project also includes structured logging to track ETL stages in detail.
 
 ---
+
+⚠️ Disclaimer on Data Coverage
+Due to limitations of the free tier of the TMDB API, this project can only retrieve a maximum of 500 pages of movie data (20 movies per page), which limits the dataset to approximately 10,000 movies. As a result, this dataset does not represent the full TMDB movie catalog, and some titles may be missing.
+
+Future improvements will include a mechanism to incrementally insert new movies on a daily basis using TMDB’s daily export of new movie IDs, enabling broader and more up-to-date coverage over time.
+
 # 🎬 Movie Analytics Dashboard
 
 👉 [**Explore the interactive Top Movies chart on Tableau Public**](https://public.tableau.com/views/Movies-ETL-Pipeline-Dashboard/Sheet1)
@@ -36,6 +42,7 @@ movie_data_pipeline/
 │   ├── extract_movies.py           # Extract movie metadata
 │   ├── extract_genres.py           # Extract genre data
 │   ├── extract_budget_revenue.py   # Extract budget and revenue data
+|   ├── extract_cast_and_crew.py    # get top cast and crew data by movie id
 │   ├── transform_silver_layer.py   # Clean and deduplicate raw data
 │   ├── transform_gold_layer.py     # Enrich and finalize analytics-ready data
 │   ├── logger.py                   # Custom logger for ETL steps

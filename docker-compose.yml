@@ -3,6 +3,7 @@
 services:
   postgres:
     image: postgres:14
+    shm_size: '1gb'
     container_name: postgres
     restart: always
     environment:

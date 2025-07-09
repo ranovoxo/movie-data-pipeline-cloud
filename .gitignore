@@ -57,3 +57,4 @@ derby.log
 ml/multi_label_classification/*.joblib
 # Ignore all Tableau export JSON files
 src/tableau/hyper_exports/*.json
+important_notes.txt

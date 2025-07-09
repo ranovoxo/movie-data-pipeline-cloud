@@ -169,7 +169,22 @@ POSTGRES_DB=movies
 POSTGRES_HOST=postgres
 POSTGRES_PORT=5432
 ```
+## 🔐 Managing Secrets and Configuration with Airflow Variables
 
+This project uses **Apache Airflow Variables** to securely manage secrets and configuration values at runtime. For example, the TMDB API key is accessed within DAGs or Python scripts using Airflow’s built-in `Variable.get()` method:
+
+```python
+from airflow.models import Variable
+
+TMDB_API_KEY = Variable.get("MY_API_KEY")
+
+✅ Setting the Variable in Airflow
+  Via Airflow UI:
+
+  Go to Admin → Variables
+  Click the "+" button to add a new variable
+  Set Key to MY_API_KEY
+  Set Value to your actual TMDB API key
 ### 3. Build and Start Services
 
 Run the following command to build and start the Docker services:

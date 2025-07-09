@@ -4,6 +4,7 @@ import os
 from logger import *
 from airflow.models import Variable
 from db.db_connector import get_engine
+from pathlib import Path
 
 # Create output directory if it doesn't exist
 #CSV_DIR = os.path.join(os.path.dirname(__file__), "..", "tableau", "hyper_exports")
@@ -12,6 +13,10 @@ from db.db_connector import get_engine
 import os
 
 JSON_DIR = "/opt/airflow/src/tableau/hyper_exports"
+
+# making this path more robust, so independent of where the script is run from 
+SQL_TOP_ACTORS = sql_file_path = Path(__file__).parent / "sql" / "actor_top_movies.sql"
+PROFITABILITY_SQL = sql_file_path = Path(__file__).parent / "sql" / "profitability_gold.sql"
 
 PROFITABILITY_QUERY = query = """
 SELECT 
@@ -36,6 +41,23 @@ def export_json_for_tableau(tables_dict, json_dir):
         json_path = os.path.join(json_dir, f"{name}.json")
         df.to_json(json_path, orient="records", lines=True)  # or lines=False for pretty JSON
         print(f"✅ Exported `{name}` to JSON: {json_path}")
+
+from sqlalchemy import text
+
+def run_query(filename, engine):
+    with open(filename, 'r') as file:
+        query = file.read()
+
+    # checking if query is SELECT (or WITH)
+    if query.strip().lower().startswith(("select", "with")):
+        # For SELECT queries, return DataFrame
+        df = pd.read_sql(query, engine)
+        return df
+    else:
+        # if just a DDL/DML query, just execute
+        with engine.connect() as conn:
+            conn.execute(text(query))
+        return None  # No DataFrame to return
 
 
 def transform_to_gold():
@@ -95,6 +117,12 @@ def transform_to_gold():
         yearly_counts = release_date_dt.dt.year.value_counts().reset_index()
         yearly_counts.columns = ['year', 'count']
 
+        run_query(SQL_TOP_ACTORS, engine)
+        """Actor Top Movies"""
+        run_query(PROFITABILITY_SQL, engine)
+        """---------------------------------------------------------------------------------"""
+
+
         # Write to gold tables
         top_movies.to_sql("gold_top_movies", engine, if_exists="replace", index=False)
         avg_rating_by_lang.to_sql("gold_avg_rating_by_language", engine, if_exists="replace", index=False)
@@ -115,5 +143,5 @@ def transform_to_gold():
 
 
     except Exception as e:
-        log_error(f"Gold transformation failed: {str(e)}")
+        log_error("extract", f"Gold transformation failed: {str(e)}")
         raise

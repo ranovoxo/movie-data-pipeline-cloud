@@ -56,7 +56,6 @@ services:
       - ./dags:/opt/airflow/dags
       - ./src:/opt/airflow/src
       - ./logs:/opt/airflow/logs
-      - ./sql:/opt/airflow/sql
       - ./db:/opt/airflow/db    
       - ./ml:/opt/airflow/ml
       - /var/run/docker.sock:/var/run/docker.sock
@@ -82,7 +81,6 @@ services:
       - ./dags:/opt/airflow/dags
       - ./src:/opt/airflow/src
       - ./logs:/opt/airflow/logs
-      - ./sql:/opt/airflow/sql
       - ./db:/opt/airflow/db   
       - ./ml:/opt/airflow/ml
       - /var/run/docker.sock:/var/run/docker.sock

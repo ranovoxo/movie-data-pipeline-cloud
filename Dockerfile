@@ -4,7 +4,7 @@ FROM apache/airflow:2.7.2-python3.10
 USER root
 
 # Install Java (required for Spark)
-RUN apt-get update && apt-get install -y openjdk-11-jdk
+RUN apt-get update && apt-get install -y openjdk-11-jdk 
 
 # Set JAVA_HOME environment variable for Java
 ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64

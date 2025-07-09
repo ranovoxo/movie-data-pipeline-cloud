@@ -87,6 +87,7 @@ def get_all_cast_and_crew_parallel():
     all_movies_cast_crew = []
     session = get_requests_session()
 
+    # to process data faster and efficiently, doing multiple requests at once. 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         futures = {executor.submit(process_movie, movie_id, session): movie_id for movie_id in movies_df['id']}
 
@@ -115,7 +116,7 @@ def save_cast_crew_to_db(df_cast_crew):
                     'popularity': popularity
                 })
         df_cast = pd.DataFrame(cast_rows)
-        df_cast.to_sql('cast_members', engine, if_exists='append', index=False)
+        df_cast.to_sql('cast_members', engine, if_exists='replace', index=False)
 
         # Flatten crew
         crew_rows = []
@@ -127,7 +128,7 @@ def save_cast_crew_to_db(df_cast_crew):
                     'job': job
                 })
         df_crew = pd.DataFrame(crew_rows)
-        df_crew.to_sql('crew_members', engine, if_exists='append', index=False)
+        df_crew.to_sql('crew_members', engine, if_exists='replace', index=False)
 
         print("✅ Successfully saved cast and crew data to PostgreSQL.")
 

@@ -7,6 +7,7 @@ from airflow.models import Variable
 from db.db_connector import get_engine
 from datetime import timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from requests.adapters import HTTPAdapter, Retry
 
 
 TMDB_API_KEY = Variable.get("MY_API_KEY")
@@ -18,6 +19,14 @@ MAX_WORKERS = 5   # TMDB's rate limit is ~40 requests every 10 seconds with API 
 #SELECT id, title, popularity release_date, overview, genres FROM movies_silver
 #WHERE CAST(release_date AS DATE) > CURRENT_DATE;
 
+# Setup session with retries to handle transient connection issues
+def get_requests_session():
+    session = requests.Session()
+    retries = Retry(total=3, backoff_factor=0.3,
+                    status_forcelist=[429, 500, 502, 503, 504])
+    session.mount("https://", HTTPAdapter(max_retries=retries))
+    return session
+
 def get_all_movie_ids():
     engine = get_engine()
     try: 
@@ -28,7 +37,7 @@ def get_all_movie_ids():
     
     return df
 
-def extract_cast_and_crew(movie_id):
+def extract_cast_and_crew(movie_id, session):
     movie_url = f'https://api.themoviedb.org/3/movie/{movie_id}/credits'
     
     params = {
@@ -36,18 +45,18 @@ def extract_cast_and_crew(movie_id):
         "language": "en-US"
     }
     
-    try: 
-        response = requests.get(movie_url, params=params)
+    try:
+        response = session.get(movie_url, params=params, timeout=5)
         if response.status_code == 200:
             return response.json()
-        
+
     except Exception as e:
-        print(f"Error fetching movie data from API: {e}")
+        log_error('extract', f"Error fetching movie {movie_id}: {e}")
 
 
-def process_movie(movie_id):
+def process_movie(movie_id, session):
     try:
-        credits = extract_cast_and_crew(movie_id)
+        credits = extract_cast_and_crew(movie_id, session)
         if not credits:
             return None
 
@@ -70,15 +79,16 @@ def process_movie(movie_id):
         }
 
     except Exception as e:
-        log_error(f"Failed to process movie_id={movie_id}: {e}")
+        log_error('extract', f"Failed to process movie_id={movie_id}: {e}")
         return None
     
 def get_all_cast_and_crew_parallel():
     movies_df = get_all_movie_ids()
     all_movies_cast_crew = []
+    session = get_requests_session()
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        futures = {executor.submit(process_movie, movie_id): movie_id for movie_id in movies_df['id']}
+        futures = {executor.submit(process_movie, movie_id, session): movie_id for movie_id in movies_df['id']}
 
         for future in as_completed(futures):
             result = future.result()
@@ -87,6 +97,7 @@ def get_all_cast_and_crew_parallel():
 
     df_cast_crew = pd.DataFrame(all_movies_cast_crew)
     save_cast_crew_to_db(df_cast_crew)
+    session.close()
 
 
 def save_cast_crew_to_db(df_cast_crew):
@@ -122,19 +133,3 @@ def save_cast_crew_to_db(df_cast_crew):
 
     except Exception as e:
         print(f"❌ Failed to save cast and crew data: {e}")
-
-#cast_crew_data = get_top_cast_and_crew_for_movies()
-
-#df_cast_crew = pd.DataFrame(cast_crew_data)
-
-"""
-for _, row in df_cast_crew.iterrows():
-    print(f"\n🎬 Movie ID: {row['id']}")
-    print(f"📛 Title: {row['title']}")
-    print("⭐ Top Cast:")
-    for name, pop in row['top_cast']:
-        print(f"  - {name} (Popularity: {pop})")
-    print("🎥 Key Crew:")
-    for name, job in row['key_crew']:
-        print(f"  - {name} ({job})")
-"""#

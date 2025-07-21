@@ -52,6 +52,15 @@ movie_data_pipeline/
 │           ├── gold_top_movies.csv
 │           └── yearly_counts.csv
 │
+├── terraform/                       # ← new directory for all Terraform files
+│   ├── backend.tf                   # S3 + DynamoDB backend
+│   ├── provider.tf                  # AWS provider + versions
+│   ├── variables.tf                 # all var declarations
+│   ├── ec2.tf                       # security group, EC2, EIP, data lookups
+│   ├── iam.tf                       # IAM data and aws_iam_group_membership
+│   ├── outputs.tf                   # expose pipeline_ip, instance_id, SG ID
+│   └── terraform.tfvars             # **gitignored**: key_name, vpc_id, subnet_id, etc.
+│
 ├── ml/
 │   ├── predict_genre.py 
 │   ├── preprocess_text.py          # Preprocess text for overview column for machine learning training

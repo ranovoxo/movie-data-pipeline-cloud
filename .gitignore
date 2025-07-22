@@ -58,27 +58,3 @@ ml/multi_label_classification/*.joblib
 # Ignore all Tableau export JSON files
 src/tableau/hyper_exports/*.json
 important_notes.txt
-key-pairs/
-terraform.tfvars
-
- Local Terraform directories and files
-.terraform/                # Plugin downloads & module cache
-crash.log                  # Terraform crash logs
-
-# State files (sensitive!)
-*.tfstate                  # Local state
-*.tfstate.backup           # Older state backups
-
-# Variable definitions containing secrets
-terraform.tfvars           # Default tfvars (API keys, passwords, etc.)
-*.auto.tfvars              # Any auto-loaded tfvars files
-override.tf                # Terraform override files
-override.tf.json           # Terraform override JSON
-*_override.tf              # Any other override files
-
-# CLI configuration files
-.terraformrc               # Terraform CLI config
-terraform.rc               # Terraform CLI config
-
-# Plan output (optional)
-*.tfplan                   # Saved plan files

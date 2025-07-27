@@ -13,7 +13,7 @@ def get_env_var(key, fallback=None):
     try:
         return Variable.get(key)
     except Exception:
-        return os.getenv(key, fallback)
+        return os.environ.get(key, fallback)
 
 # Config values
 POSTGRES_DB = get_env_var("POSTGRES_DB", "movie-ratings-db")
@@ -23,7 +23,7 @@ POSTGRES_HOST = get_env_var("POSTGRES_HOST", "postgres")  # default to docker se
 POSTGRES_PORT = get_env_var("POSTGRES_PORT", "5432")
 
 # Use Airflow's home directory or fallback to a safe path
-LOG_DIR = os.path.join(os.getenv("AIRFLOW_HOME", "/opt/airflow"), "logs")
+LOG_DIR = os.path.join(os.environ.get("AIRFLOW_HOME", "/opt/airflow"), "logs")
 
 # Ensure directory exists
 os.makedirs(LOG_DIR, exist_ok=True)

@@ -1,101 +1,39 @@
-# version: "3.8"
+version: "3.8"
 
 services:
-  postgres:
-    image: postgres:14
-    container_name: postgres
-    restart: always
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PW}
-      POSTGRES_DB: ${POSTGRES_DB}
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - airflow_net
-    env_file:
-      - .env
-
   pgadmin:
     image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     ports:
       - "5050:80"
-    depends_on:
-      - postgres
-    networks:
-      - airflow_net
 
   airflow-webserver:
-    env_file:
-      - .env
     image: apache/airflow:2.7.1-python3.10
-    build: 
-      context: .
-      dockerfile: Dockerfile
     container_name: airflow-webserver
     restart: always
-    depends_on:
-      - postgres
+    env_file:
+      - .env
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PW}@postgres:5432/${POSTGRES_DB}
-      AIRFLOW__CORE__FERNET_KEY: ''
+      # point at RDS via your .env
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PW}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-      JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
-      SPARK_HOME: /opt/spark
-      PYSPARK_PYTHON: python3
-      PYTHONPATH: /opt/airflow
-    volumes:
-      - ./dags:/opt/airflow/dags
-      - ./src:/opt/airflow/src
-      - ./logs:/opt/airflow/logs
-      - ./sql:/opt/airflow/sql
-      - ./db:/opt/airflow/db    
-      - ./ml:/opt/airflow/ml
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ${TABLEAU_EXPORT_PATH}:/opt/airflow/src/tableau/hyper_exports
     ports:
       - "8080:8080"
     command: webserver
-    networks:
-      - airflow_net
 
   airflow-scheduler:
-    build: .
+    image: apache/airflow:2.7.1-python3.10
     container_name: airflow-scheduler
     restart: always
-    depends_on:
-      - postgres
-      - airflow-webserver
+    env_file:
+      - .env
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PW}@postgres:5432/${POSTGRES_DB}
-      PYTHONPATH: /opt/airflow
-    volumes:
-      - ./dags:/opt/airflow/dags
-      - ./src:/opt/airflow/src
-      - ./logs:/opt/airflow/logs
-      - ./sql:/opt/airflow/sql
-      - ./db:/opt/airflow/db   
-      - ./ml:/opt/airflow/ml
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ${TABLEAU_EXPORT_PATH}:/opt/airflow/src/tableau/hyper_exports
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PW}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
     command: scheduler
-    networks:
-      - airflow_net
-
-volumes:
-  postgres_data:
-  
-
-networks:
-  airflow_net:
-    driver: bridge
-    external:
-      name: movies-etl-project_airflow_net

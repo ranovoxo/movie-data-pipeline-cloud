@@ -27,6 +27,9 @@ services:
       - "8080:8080"
     volumes:
       - ./dags:/opt/airflow/dags
+      - ./src:/opt/airflow/src
+      - ./ml:/opt/airflow/ml
+      - ./sql:/opt/airflow/sql
     command: webserver
 
   airflow-scheduler:
@@ -41,3 +44,6 @@ services:
     command: scheduler
     volumes:
       - ./dags:/opt/airflow/dags
+      - ./src:/opt/airflow/src
+      - ./ml:/opt/airflow/ml
+      - ./sql:/opt/airflow/sql

@@ -133,8 +133,4 @@ def save_cast_crew_to_db(df_cast_crew):
         print("✅ Successfully saved cast and crew data to PostgreSQL.")
 
     except Exception as e:
-<<<<<<< HEAD
         print(f"❌ Failed to save cast and crew data: {e}")
-=======
-        print(f"❌ Failed to save cast and crew data: {e}")
->>>>>>> 98045d6115e0ecece6901e970a56692951a88789

@@ -1,7 +1,7 @@
 import os
 import requests
 import pandas as pd
-from logger import log_extract_start, log_extract_end, log_error, log_info
+from src.logger import log_extract_start, log_extract_end, log_error, log_info
 from db.db_connector import get_engine
 from airflow.models import Variable
 

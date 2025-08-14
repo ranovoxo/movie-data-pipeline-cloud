@@ -1,7 +1,7 @@
 import pandas as pd
 import logging
 import os
-from logger import *
+from src.logger import *
 from airflow.models import Variable
 from db.db_connector import get_engine
 

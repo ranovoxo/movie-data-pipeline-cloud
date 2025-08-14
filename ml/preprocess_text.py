@@ -2,7 +2,7 @@ import re
 import logging
 import os
 import pandas as pd
-from logger import *
+from src.logger import *
 from db.db_connector import get_engine
 
 

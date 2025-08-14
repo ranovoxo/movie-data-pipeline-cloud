@@ -1,8 +1,7 @@
 import os
 import sys
 # get path of python files to run
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../ml')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.extract_movies import extract_movies
 from src.extract_genres import extract_genres

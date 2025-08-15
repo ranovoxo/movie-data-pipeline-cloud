@@ -30,6 +30,7 @@ services:
       - ./src:/opt/airflow/src
       - ./ml:/opt/airflow/ml
       - ./sql:/opt/airflow/sql
+      - ./db:/opt/airflow/db
     command: webserver
 
   airflow-scheduler:
@@ -47,3 +48,4 @@ services:
       - ./src:/opt/airflow/src
       - ./ml:/opt/airflow/ml
       - ./sql:/opt/airflow/sql
+      - ./db:/opt/airflow/db

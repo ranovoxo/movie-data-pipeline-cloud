@@ -1,3 +1,7 @@
+import os
+from datetime import datetime
+
+import boto3
 import joblib
 import pandas as pd
 from sklearn.preprocessing import MultiLabelBinarizer
@@ -12,6 +16,8 @@ from sklearn.metrics import classification_report
 
 
 TABLE_NAME = 'cleaned_overview_text'
+S3_BUCKET = os.getenv("S3_BUCKET_NAME", "your-bucket-name")
+LOCAL_ARTIFACT_DIR = "/tmp/ml_artifacts"
 
 def get_data():
     engine = get_engine()
@@ -46,16 +52,37 @@ def train_data(df):
 
 
     # save artifacts for inference for next task "predict_genere"
-    joblib.dump(clf, 'ml/genre_model.joblib')
-    print("Training complete and model genre_model.joblib saved.")
-    joblib.dump(vectorizer, 'ml/vectorizer.joblib')
-    print("Training complete and model vectorizer.joblib saved.")
-    joblib.dump(mlb, 'ml/label_binarizer.joblib')
-    print("Training complete and model label_binarizer.joblib saved.")
+    os.makedirs(LOCAL_ARTIFACT_DIR, exist_ok=True)
+    timestamp = datetime.utcnow().strftime("%Y-%m-%d_%H%M%S")
+    s3_prefix = f"movie-genre-classifier/v={timestamp}/"
+    s3 = boto3.client("s3")
 
-def start_training():
+    artifacts = {
+        'model': (clf, 'genre_model.joblib'),
+        'vectorizer': (vectorizer, 'vectorizer.joblib'),
+        'label_binarizer': (mlb, 'label_binarizer.joblib'),
+    }
+    artifact_uris = {}
+
+    for name, (obj, filename) in artifacts.items():
+        local_path = os.path.join(LOCAL_ARTIFACT_DIR, filename)
+        joblib.dump(obj, local_path)
+        print(f"Training complete and {filename} saved locally at {local_path}.")
+        s3_key = s3_prefix + filename
+        s3.upload_file(local_path, S3_BUCKET, s3_key)
+        uri = f"s3://{S3_BUCKET}/{s3_key}"
+        print(f"Uploaded {filename} to {uri}")
+        artifact_uris[name] = uri
+
+    return artifact_uris
+
+def start_training(ti=None, **kwargs):
     df = get_data()
-    train_data(df)
+    artifact_uris = train_data(df)
+    if ti:
+        ti.xcom_push(key="artifacts", value=artifact_uris)
+    print("Artifact URIs:", artifact_uris)
+    return artifact_uris
 
 if __name__ == "__main__":
     start_training()

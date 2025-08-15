@@ -1,10 +1,14 @@
 import logging
+import os
 
 def setup_logger(name: str, log_file: str):
     """Setup a logger for each ETL step"""
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
     
+    # Ensure the log directory exists before creating the file handler
+    os.makedirs(os.path.dirname(log_file), exist_ok=True)
+
     # Create file handler to log to specific log file
     file_handler = logging.FileHandler(log_file)
     file_handler.setLevel(logging.INFO)

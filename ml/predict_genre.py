@@ -1,21 +1,37 @@
+import os
+from urllib.parse import urlparse
+
+import boto3
 import joblib
 import numpy as np
 import pandas as pd
 from db.db_connector import get_engine
 
 SOURCE_TABLE = "cleaned_overview_text"
-
-# load saved artifacts
-clf = joblib.load('ml/genre_model.joblib')
-vectorizer = joblib.load('ml/vectorizer.joblib')
-mlb = joblib.load('ml/label_binarizer.joblib')
+LOCAL_ARTIFACT_DIR = "/tmp/ml_artifacts"
 
 def load_data():
     engine = get_engine()
     df = pd.read_sql(f"SELECT title, genres, cleaned_overview FROM {SOURCE_TABLE}", engine)
     return df
 
-def predict_genres(df):
+
+def load_artifacts(artifact_uris):
+    os.makedirs(LOCAL_ARTIFACT_DIR, exist_ok=True)
+    s3 = boto3.client("s3")
+    artifacts = {}
+    for name, uri in artifact_uris.items():
+        parsed = urlparse(uri)
+        bucket = parsed.netloc
+        key = parsed.path.lstrip('/')
+        local_path = os.path.join(LOCAL_ARTIFACT_DIR, os.path.basename(key))
+        s3.download_file(bucket, key, local_path)
+        artifacts[name] = joblib.load(local_path)
+        print(f"Downloaded {name} from {uri} to {local_path}")
+    return artifacts['model'], artifacts['vectorizer'], artifacts['label_binarizer']
+
+
+def predict_genres(df, clf, vectorizer, mlb):
     predictions = []
     results = []
     total = len(df)
@@ -29,7 +45,7 @@ def predict_genres(df):
         title = row['title']
         overview_text = row['cleaned_overview']
         print(overview_text)
-        actual_genres = set(g.strip() for g in row['genres'].split(',') if g.strip()) # assumes genres is a list or tuple
+        actual_genres = set(g.strip() for g in row['genres'].split(',') if g.strip())  # assumes genres is a list or tuple
 
         # predict
         X = vectorizer.transform([overview_text])
@@ -60,13 +76,24 @@ def predict_genres(df):
 
     return pd.DataFrame(results)
 
+
 def save_predictions(df, table_name='ml_genre_predictions'):
     engine = get_engine()
     df.to_sql(table_name, engine, if_exists='replace', index=False)
 
 
-def start_genre_predictions():
+def start_genre_predictions(ti=None, **kwargs):
+    artifact_uris = {}
+    if ti:
+        artifact_uris = ti.xcom_pull(task_ids='train_genre_ml', key='artifacts') or {}
+    if not artifact_uris:
+        raise ValueError("Artifact URIs not found in XCom")
+    clf, vectorizer, mlb = load_artifacts(artifact_uris)
     df = load_data()
-    predicted_genres = predict_genres(df)
+    predicted_genres = predict_genres(df, clf, vectorizer, mlb)
     save_predictions(predicted_genres)
     print("Predicted genres:", predicted_genres)
+
+
+if __name__ == "__main__":
+    start_genre_predictions()

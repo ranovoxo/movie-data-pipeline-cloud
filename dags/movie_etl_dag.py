@@ -4,7 +4,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../ml')))
 
-from src.extract_movies import extract_movies
+from src.extract_movies import start_extracting_movies
 from src.extract_genres import extract_genres
 from src.extract_budget_revenue import extract_movie_financials
 from src.extract_cast_and_crew import get_all_cast_and_crew_parallel
@@ -39,7 +39,7 @@ dag = DAG(
 )
 
 def get_movies():
-    extract_movies()  
+    start_extracting_movies()
 
 def get_genres():
     extract_genres()

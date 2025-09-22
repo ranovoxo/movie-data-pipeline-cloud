@@ -1,9 +1,9 @@
 import os
 from datetime import datetime
-
 import boto3
 import joblib
 import pandas as pd
+from airflow.models import Variable
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
@@ -16,7 +16,8 @@ from sklearn.metrics import classification_report
 
 
 TABLE_NAME = 'cleaned_overview_text'
-S3_BUCKET = os.getenv("S3_BUCKET_NAME", "your-bucket-name")
+S3_BUCKET = Variable.get('S3_BUCKET_NAME')
+#os.getenv("S3_BUCKET_NAME", "your-bucket-name")
 LOCAL_ARTIFACT_DIR = "/tmp/ml_artifacts"
 
 def get_data():

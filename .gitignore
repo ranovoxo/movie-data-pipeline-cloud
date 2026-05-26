@@ -55,3 +55,4 @@ derby.log
 *.swp
 *.tmp
 ml/*.joblib
+env_json.json

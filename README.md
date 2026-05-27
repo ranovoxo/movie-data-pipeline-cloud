@@ -19,7 +19,8 @@ movie_data_pipeline/
 │
 ├── dags/
 │   ├── init_schema.py              # Creates DB schema on Airflow start
-│   └── movie_etl_dag.py            # Airflow DAG definition
+│   ├── movie_etl_dag.py            # Daily ETL Airflow DAG definition
+│   └── movie_genre_ml_dag.py       # Manual ML genre prediction DAG definition
 │
 ├── src/
 │   ├── extract_movies.py           # Extract movie metadata
@@ -68,7 +69,9 @@ movie_data_pipeline/
 ---
 
 ## Pipeline Stages
-[API] → [Extract Scripts] → [PostgreSQL Raw Tables] → [Silver & Gold Tables] → [Tableau/ML Model]
+[API] → [Extract Scripts] → [PostgreSQL Raw Tables] → [Silver & Gold Tables] → [Tableau]
+
+[Silver/Gold Tables] → [Preprocess Text] → [Train Genre Model] → [Generate Genre Predictions]
 
 ### Extract
 
@@ -88,7 +91,9 @@ movie_data_pipeline/
 
 ### Orchestration
 
-* Apache Airflow manages and schedules all tasks.
+* Apache Airflow manages the ETL and ML workflows as separate DAGs.
+* `movie_data_etl` runs the daily extract and transform pipeline.
+* `movie_genre_ml` runs the genre prediction workflow manually, after the ETL data is available.
 
 ### Machine Learning
 
@@ -100,7 +105,7 @@ movie_data_pipeline/
   - `train_genre_multilabel.py`  
     Trains a multi-label classifier to predict genres based on preprocessed plot summaries.
 
-  - `predict_genere.py`  
+  - `predict_genre.py`  
     Applies the trained model to generate genre predictions.
 
   - `utils.py`  
@@ -210,7 +215,11 @@ Run the scripts in the `sql/` directory using a tool like **DBeaver**, **pgAdmin
 
 ---
 
-## Airflow DAG Tasks
+## Airflow DAGs
+
+### `movie_data_etl`
+
+Runs daily and owns the data extraction and transformation workflow.
 
 - **`extract_movies`**  
   Fetches raw movie metadata from the TMDB API and stores it in the `raw_movies` table.
@@ -235,6 +244,19 @@ Generates curated gold-layer analytics tables based on cleaned movie data, enabl
 
   - `gold_yearly_counts`  
   Summarizes the number of movies released each year. Useful for visualizing historical trends in movie production volume over time.
+
+### `movie_genre_ml`
+
+Runs manually and owns the machine learning workflow for genre prediction.
+
+- **`preprocess_text_task`**  
+  Cleans and prepares movie overview text for model training.
+
+- **`train_genre_ml`**  
+  Trains the multi-label genre classification model.
+
+- **`start_genre_predictions_ml`**  
+  Uses the trained model to generate genre predictions.
 
 
 ---
@@ -274,4 +296,3 @@ These logs help you monitor step-by-step progress, errors, and runtime metrics. 
 ## License
 
 This project is licensed under the **MIT License**.
-

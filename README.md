@@ -20,7 +20,7 @@ movie_data_pipeline/
 ├── dags/
 │   ├── init_schema.py              # Creates DB schema on Airflow start
 │   ├── movie_etl_dag.py            # Daily ETL Airflow DAG definition
-│   └── movie_genre_ml_dag.py       # Manual ML genre prediction DAG definition
+│   └── movie_genre_ml_dag.py       # Weekly ML genre prediction DAG definition
 │
 ├── src/
 │   ├── extract_movies.py           # Extract movie metadata
@@ -92,8 +92,8 @@ movie_data_pipeline/
 ### Orchestration
 
 * Apache Airflow manages the ETL and ML workflows as separate DAGs.
-* `movie_data_etl` runs the daily extract and transform pipeline.
-* `movie_genre_ml` runs the genre prediction workflow manually, after the ETL data is available.
+* `movie_data_etl` runs daily at 2:00 AM.
+* `movie_genre_ml` runs weekly on Sunday at 4:00 AM, after the ETL data is available.
 
 ### Machine Learning
 
@@ -219,7 +219,7 @@ Run the scripts in the `sql/` directory using a tool like **DBeaver**, **pgAdmin
 
 ### `movie_data_etl`
 
-Runs daily and owns the data extraction and transformation workflow.
+Runs daily at 2:00 AM and owns the data extraction and transformation workflow.
 
 - **`extract_movies`**  
   Fetches raw movie metadata from the TMDB API and stores it in the `raw_movies` table.
@@ -247,7 +247,7 @@ Generates curated gold-layer analytics tables based on cleaned movie data, enabl
 
 ### `movie_genre_ml`
 
-Runs manually and owns the machine learning workflow for genre prediction.
+Runs weekly on Sunday at 4:00 AM and owns the machine learning workflow for genre prediction.
 
 - **`preprocess_text_task`**  
   Cleans and prepares movie overview text for model training.

@@ -26,7 +26,7 @@ dag = DAG(
     'movie_data_etl',
     default_args=default_args,
     description='ETL pipeline for movie data',
-    schedule_interval='@daily',
+    schedule_interval='0 2 * * *',
     start_date=datetime(2025, 5, 5),
     catchup=False,
 )

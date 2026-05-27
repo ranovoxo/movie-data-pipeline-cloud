@@ -7,11 +7,9 @@ Here's the **README.md** file for your Movie Data ETL Pipeline project:
 This is a fully Dockerized data engineering pipeline that extracts movie data from a public API, stores raw data in PostgreSQL, transforms it into silver and gold tables, and orchestrates the entire process with Apache Airflow. The project also includes structured logging to track ETL stages in detail.
 
 ---
-# 🎬 Movie Analytics Dashboard
+# Movie Analytics Reporting
 
-👉 [**Explore the interactive Top Movies chart on Tableau Public**](https://public.tableau.com/views/Movies-ETL-Pipeline-Dashboard/Sheet1)
-
-Get insights on movie ratings, genres, and yearly trends through an interactive Tableau dashboard. Hover over each bar to see vote counts, genres, and release dates. More visuals to come!
+The pipeline creates curated reporting tables for a future web dashboard with insights on movie ratings, genres, and yearly trends.
 
 ## Project Structure
 ```
@@ -30,7 +28,7 @@ movie_data_pipeline/
 │   ├── transform_gold_layer.py     # Enrich and finalize analytics-ready data
 │   ├── logger.py                   # Custom logger for ETL steps
 │   └── tableau/
-│       └── hyper_exports/          # CSVs for Tableau dashboards
+│       └── hyper_exports/          # Legacy local exports
 │           ├── avg_rating_by_lang.csv
 │           ├── gold_top_movies.csv
 │           └── yearly_counts.csv
@@ -69,7 +67,7 @@ movie_data_pipeline/
 ---
 
 ## Pipeline Stages
-[API] → [Extract Scripts] → [PostgreSQL Raw Tables] → [Silver & Gold Tables] → [Tableau]
+[API] → [Extract Scripts] → [PostgreSQL Raw Tables] → [Silver & Gold Tables] → [Website/API]
 
 [Silver/Gold Tables] → [Preprocess Text] → [Train Genre Model] → [Generate Genre Predictions]
 

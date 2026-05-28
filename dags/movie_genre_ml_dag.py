@@ -25,7 +25,7 @@ dag = DAG(
     'movie_genre_ml',
     default_args=default_args,
     description='ML pipeline for movie genre prediction',
-    schedule_interval='0 4 * * 0',
+    schedule_interval='@daily',
     start_date=datetime(2025, 5, 5),
     catchup=False,
 )

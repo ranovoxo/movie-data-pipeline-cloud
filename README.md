@@ -186,11 +186,6 @@ This starts:
   - `gold_yearly_counts`
 
 
-- **pgAdmin**  
-  Access pgAdmin UI at: [http://localhost:5050](http://localhost:5050)  
-  Default login: `admin@admin.com / [your password in .env or Docker secrets]`
-
-
 ### Default Airflow credentials:
 
 * **Username**: airflow
@@ -209,7 +204,7 @@ docker-compose exec airflow-webserver airflow users create \
 
 ### 5. Create Database Tables
 
-Run the scripts in the `sql/` directory using a tool like **DBeaver**, **pgAdmin**, or with a DAG task to auto-init the schema in PostgreSQL.
+Run the scripts in the `sql/` directory using a database client like **DBeaver**, or with a DAG task to auto-init the schema in PostgreSQL.
 
 ---
 
